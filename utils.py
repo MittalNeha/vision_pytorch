@@ -3,9 +3,10 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 import albumentations as A
+from torchvision import datasets, transforms
 
 
-def plot_aug(aug_dict, data, ncol=6):
+def plot_aug(plot_misclassified, data, ncol=6):
   nrow = len(aug_dict)
 
   fig, axes = plt.subplots(ncol, nrow, figsize=( 3*nrow, 15), squeeze=False)
@@ -71,7 +72,9 @@ def plot_data(data, rows, cols, lower_value, upper_value):
 def plot_misclassified(model, test_loader, classes, device, dataset_mean, dataset_std, no_misclf=20, return_misclf=False):
   count = 0
   k = 30
+  images = []
   misclf = list()
+  labels = []
   
   while count<no_misclf:
     img, label = test_loader.dataset[k]
@@ -83,7 +86,9 @@ def plot_misclassified(model, test_loader, classes, device, dataset_mean, datase
     if pred!=label:
       denormalize = transforms.Normalize((-1 * dataset_mean / dataset_std), (1.0 / dataset_std))
       img = denormalize(img)
-      misclf.append((img, label, pred))
+      misclf.append([img, label, pred])
+      images.append(img)
+      labels.append(label)
       count += 1
   
   rows, cols = int(no_misclf/5),5
@@ -103,7 +108,7 @@ def plot_misclassified(model, test_loader, classes, device, dataset_mean, datase
   plt.show()
   
   if return_misclf:
-    return misclf
+    return [images, labels]
   
   
   
