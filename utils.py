@@ -6,7 +6,7 @@ import albumentations as A
 from torchvision import datasets, transforms
 
 
-def plot_aug(plot_misclassified, data, ncol=6):
+def plot_aug(aug_dict, data, ncol=6):
   nrow = len(aug_dict)
 
   fig, axes = plt.subplots(ncol, nrow, figsize=( 3*nrow, 15), squeeze=False)
