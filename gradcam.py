@@ -89,7 +89,7 @@ class GradCAM():
 
         #get the heatmap
         gcam = gcam.numpy()      
-        cmap = cm.jet_r(gcam)[..., :3] #* 255.0
+        cmap = cm.jet(gcam)[..., :3] #* 255.0
         gcam_image = (cmap.astype(np.float) + input_image.astype(np.float)) / 2
 
         return gcam_image
