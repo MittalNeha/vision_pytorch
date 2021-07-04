@@ -80,4 +80,5 @@ class MyResNet(nn.Module):
         out = self.linear(out)
         return out
 
-#net = MyResNet(BasicBlock, [1,1,1])
+def customResnet():
+    return MyResNet(BasicBlock, [1,1,1])
