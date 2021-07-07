@@ -31,7 +31,7 @@ class BasicBlock(nn.Module):
             out = F.relu(self.bn1(self.conv1(x)))
             out = F.relu(self.bn2(self.conv2(out)))
             r1 = out + self.shortcut(x)  # This is the residual block
-            return out + r1
+            return x + r1
         else:
             return x
 
