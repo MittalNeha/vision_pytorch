@@ -90,19 +90,20 @@ def test(model, device, test_loader):
 
 def fit_model(net, scheduler, optimizer, device, NUM_EPOCHS,train_loader, test_loader, use_l1=False):
   training_acc, training_loss, testing_acc, testing_loss = list(), list(), list(), list()
-  lr = list()
+  train_lr = list()
   
   for epoch in range(1,NUM_EPOCHS+1):
       print("EPOCH:", epoch)
       train_acc, train_loss, lr = train(model=net, device=device, train_loader=train_loader, optimizer=optimizer, use_l1=use_l1, scheduler=scheduler)
       test_acc, test_loss = test(net, device, test_loader)
       # update LR
-      if scheduler is not None or not isinstance(scheduler, torch.optim.lr_scheduler.OneCycleLR):
+      if scheduler is not None and not isinstance(scheduler, torch.optim.lr_scheduler.OneCycleLR):
         scheduler.step(test_loss)
       training_acc.append(train_acc)
       training_loss.append(train_loss)
       testing_acc.append(test_acc)
       testing_loss.append(test_loss)
+      train_lr.extend(lr)
       
-  return net, (training_acc, training_loss, testing_acc, testing_loss, lr)
+  return net, (training_acc, training_loss, testing_acc, testing_loss, train_lr)
 
