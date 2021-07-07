@@ -1,4 +1,4 @@
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 import torch.optim as optim
 import torch.nn.functional as F
 import torchvision
@@ -20,6 +20,7 @@ def train(model, device, train_loader, optimizer, use_l1=False, lambda_l1=0.01, 
   correct = 0
   processed = 0
   train_loss = 0
+  hist_lr = []
   
   for batch_idx, (data, target) in enumerate(pbar):
     # get samples
@@ -49,6 +50,9 @@ def train(model, device, train_loader, optimizer, use_l1=False, lambda_l1=0.01, 
     loss.backward()
     optimizer.step()
 
+    if isinstance(scheduler, torch.optim.lr_scheduler.OneCycleLR):
+        scheduler.step()
+
     train_loss += loss.item()
     
     # Update pbar-tqdm
@@ -56,10 +60,11 @@ def train(model, device, train_loader, optimizer, use_l1=False, lambda_l1=0.01, 
     pred = y_pred.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
     correct += pred.eq(target.view_as(pred)).sum().item()
     processed += len(data)
+    hist_lr.append(scheduler.get_last_lr())
 
     pbar.set_description(desc= f'Batch_id={batch_idx} Loss={train_loss/(batch_idx + 1):.5f} Accuracy={100*correct/processed:0.2f}')
 
-  return 100*correct/processed, train_loss/(batch_idx + 1)
+  return 100*correct/processed, train_loss/(batch_idx + 1), hist_lr
 
 def test(model, device, test_loader):
     model.eval()
@@ -85,18 +90,19 @@ def test(model, device, test_loader):
 
 def fit_model(net, scheduler, optimizer, device, NUM_EPOCHS,train_loader, test_loader, use_l1=False):
   training_acc, training_loss, testing_acc, testing_loss = list(), list(), list(), list()
+  lr = list()
   
   for epoch in range(1,NUM_EPOCHS+1):
       print("EPOCH:", epoch)
-      train_acc, train_loss = train(model=net, device=device, train_loader=train_loader, optimizer=optimizer, use_l1=use_l1, scheduler=scheduler)
+      train_acc, train_loss, lr = train(model=net, device=device, train_loader=train_loader, optimizer=optimizer, use_l1=use_l1, scheduler=scheduler)
       test_acc, test_loss = test(net, device, test_loader)
       # update LR
-      if scheduler is not None:
+      if scheduler is not None or not isinstance(scheduler, torch.optim.lr_scheduler.OneCycleLR):
         scheduler.step(test_loss)
       training_acc.append(train_acc)
       training_loss.append(train_loss)
       testing_acc.append(test_acc)
       testing_loss.append(test_loss)
       
-  return net, (training_acc, training_loss, testing_acc, testing_loss)
+  return net, (training_acc, training_loss, testing_acc, testing_loss, lr)
 
