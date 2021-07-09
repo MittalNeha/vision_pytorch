@@ -23,14 +23,12 @@ class BasicBlock(nn.Module):
                                    stride=1, padding=1, bias=False)
             self.bn2 = nn.BatchNorm2d(planes)
 
-            self.shortcut = nn.Sequential()
-
     def forward(self, x):
         x = F.relu(self.bn(self.mp(self.conv(x))))
         if self.has_resblock:
             out = F.relu(self.bn1(self.conv1(x)))
             out = F.relu(self.bn2(self.conv2(out)))
-            r1 = out + self.shortcut(x)  # This is the residual block
+            r1 = out + x  # This is the residual block
             return x + r1
         else:
             return x
@@ -48,7 +46,11 @@ class MyResNet(nn.Module):
         self.layer1 = self._make_layer(block, 128, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 256, num_blocks[1], stride=1, resblock=False)
         self.layer3 = self._make_layer(block, 512, num_blocks[2], stride=1)
-        self.linear = nn.Linear(512 * block.expansion, num_classes)
+        self.pool   = nn.MaxPool2d(4)
+
+        self.linear1 = nn.Linear(512 * block.expansion, 1024)
+        self.do1 = nn.Dropout(0.1)
+        self.linear2 = nn.Linear(1024, num_classes)
 
     def _make_layer(self, block, planes, num_blocks, stride, resblock=True):
         strides = [stride] + [1] * (num_blocks - 1)
@@ -63,10 +65,12 @@ class MyResNet(nn.Module):
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
-        out = F.max_pool2d(out, 4, 1)
+        out = self.pool(out)
 
         out = out.view(out.size(0), -1)
-        out = self.linear(out)
+        out = (self.linear2((F.relu(self.linear1(out)))))
+
+        
         return F.softmax(out, dim=-1)
 
 
