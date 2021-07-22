@@ -1,5 +1,5 @@
 # vision_pytorch
-contains the utils, models etc for building vision based deep learning models
+Contains the utils, models etc for building vision based for training and vizualizing pytorch CNN models
 
 ```
 ├── dataloaders
