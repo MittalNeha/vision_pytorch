@@ -26,6 +26,10 @@ contains the utils, models etc for building vision based deep learning models
 USAGE
 -----------
 
+- Dataloaders contains lodaer function to laod data for pytorch Currently for Tiny Image Net 200 and CIDAR10 dataset
+- Models contains custom ResNet, ResNet 18 and ResNET 34
+- utils has functon used for  Gradcam and Vizulation , Finding Learning Rate for dataset, and saving history locally
+- main.py is used for traininf, testing and saving the model
 ```
 main.py
 
